@@ -100,16 +100,16 @@ func keyevent() {
 		}
 
 		if !skipmouse {
-			if x > 1900 {
-				robotgo.Move(0, y+5)
-			}
-			if y > 900 {
-				robotgo.Move(x+5, 0)
-			}
 			robotgo.Move(x+5, y+5)
 			if cnt%5 == 0 {
 				fmt.Println("click mouse")
 				robotgo.Click()
+			}
+			if x > 1900 {
+				robotgo.Move(110, y+5)
+			}
+			if y > 900 {
+				robotgo.Move(x+5, 110)
 			}
 		}
 		cnt += 1
