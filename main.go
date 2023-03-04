@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/eiannone/keyboard"
 	"github.com/go-vgo/robotgo"
 	"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
@@ -19,11 +18,6 @@ import (
 //https://github.com/go-vgo/robotgo
 
 func main() {
-	mygtk()
-	return
-}
-
-func mygtk() {
 	runtime.GOMAXPROCS(10)
 	glib.ThreadInit(nil)
 	gdk.ThreadsInit()
@@ -34,14 +28,6 @@ func mygtk() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	for _, file := range files {
-		fmt.Println(file.Name(), file.IsDir())
-	}
-
-	fmt.Print(rand.Intn(100), ",")
-	fmt.Print(rand.Intn(100))
-	fmt.Println()
 
 	window := gtk.NewWindow(gtk.WINDOW_TOPLEVEL) //WINDOW_TOPLEVEL)
 	window.SetPosition(gtk.WIN_POS_CENTER_ALWAYS)
@@ -84,6 +70,7 @@ func keyevent() {
 	}
 
 	keys := []int{keybd_event.VK_UP, keybd_event.VK_DOWN, keybd_event.VK_LEFT, keybd_event.VK_RIGHT}
+	skipmouse := false
 	cnt := 0
 	for {
 		// Select keys to be pressed
@@ -100,42 +87,32 @@ func keyevent() {
 		kb.Press()
 		time.Sleep(10 * time.Millisecond)
 		kb.Release()
-		cnt += 1
-		time.Sleep(5 * 100 * time.Millisecond)
-		if cnt > 10 && cnt%5 == 0 {
-			x, y := robotgo.GetMousePos()
-			robotgo.Move(x+5, y+5)
+
+		delay := (time.Duration)(5 + rand.Intn(10)%20)
+		time.Sleep(100 * time.Millisecond * 5) //delay
+		fmt.Println("sleep ", delay)
+
+		x, y := robotgo.GetMousePos()
+		if x < 100 || y < 100 {
+			skipmouse = true
+		} else {
+			skipmouse = false
+		}
+
+		if !skipmouse {
 			if x > 1900 {
 				robotgo.Move(0, y+5)
 			}
 			if y > 900 {
 				robotgo.Move(x+5, 0)
 			}
-			if x > 200 && y > 200 {
+			robotgo.Move(x+5, y+5)
+			if cnt%5 == 0 {
+				fmt.Println("click mouse")
 				robotgo.Click()
 			}
 		}
-	}
-}
+		cnt += 1
 
-func quit() {
-	keysEvents, err := keyboard.GetKeys(10)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-
-	fmt.Println("Press ESC to quit")
-	for {
-		event := <-keysEvents
-		if event.Err != nil {
-			panic(event.Err)
-		}
-		fmt.Printf("You pressed: rune %q, key %X\r\n", event.Rune, event.Key)
-		if event.Key == keyboard.KeyEnd || event.Key == keyboard.KeyEsc {
-			break
-		}
 	}
 }
