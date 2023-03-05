@@ -10,24 +10,59 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"runtime"
+	"strings"
 	"time"
 )
 
 //install robotgo
 //https://github.com/go-vgo/robotgo
+var _files []string
+
+func images() []string {
+	var results []string
+
+	home, _ := os.UserHomeDir()
+	dirs := []string{"./images", home + "/Pictures"}
+
+	for _, d := range dirs {
+		files, err := ioutil.ReadDir(d)
+
+		if err == nil {
+			for _, f := range files {
+				if strings.Contains(f.Name(), "Screenshot") && strings.Contains(f.Name(), "png") {
+					results = append(results, d+"/"+f.Name())
+				}
+			}
+		}
+	}
+	return results
+}
+
+func getFile() string {
+	if len(_files) < 1 {
+		return ""
+	}
+	fmt.Println(_files)
+	r := rand.Intn(len(_files))
+	p := _files[r]
+	_files = append(_files[:r], _files[r+1:]...)
+	fmt.Println(p)
+	return p
+}
 
 func main() {
+	_files = images()
+	if len(_files) < 1 {
+		log.Fatal("Please provide enough files")
+	}
+
 	runtime.GOMAXPROCS(10)
 	glib.ThreadInit(nil)
 	gdk.ThreadsInit()
 	gdk.ThreadsEnter()
 	gtk.Init(nil)
-
-	files, err := ioutil.ReadDir("./images")
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	window := gtk.NewWindow(gtk.WINDOW_TOPLEVEL) //WINDOW_TOPLEVEL)
 	window.SetPosition(gtk.WIN_POS_CENTER_ALWAYS)
@@ -38,17 +73,14 @@ func main() {
 	window.Container.Add(fixed)
 	window.SetSizeRequest(1880, 1030)
 
-	image := gtk.NewImageFromFile("./images/" + files[0].Name())
+	image := gtk.NewImageFromFile(getFile())
 	fixed.Put(image, -56, -51)
 	go func() {
 		for {
-			time.Sleep(time.Second * 60 * 3)
+			time.Sleep(time.Second * 60 * 8)
 
 			gdk.ThreadsEnter()
-			r := rand.Intn(len(files))
-			filepath := "./images/" + files[r].Name()
-			fmt.Println(filepath)
-			image.SetFromFile(filepath)
+			image.SetFromFile(getFile())
 			gdk.ThreadsLeave()
 		}
 	}()
