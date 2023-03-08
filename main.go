@@ -19,12 +19,13 @@ import (
 //install robotgo
 //https://github.com/go-vgo/robotgo
 var _files []string
+var _fileno int
 
 func images() []string {
 	var results []string
 
 	home, _ := os.UserHomeDir()
-	dirs := []string{"./images", home + "/Pictures"}
+	dirs := []string{home + "/Pictures"}
 
 	for _, d := range dirs {
 		files, err := ioutil.ReadDir(d)
@@ -44,10 +45,11 @@ func getFile() string {
 	if len(_files) < 1 {
 		return ""
 	}
-	fmt.Println(_files)
-	r := rand.Intn(len(_files))
-	p := _files[r]
-	_files = append(_files[:r], _files[r+1:]...)
+	if _fileno >= len(_files) {
+		_fileno = 0
+	}
+	p := _files[_fileno]
+	_fileno += 1
 	fmt.Println(p)
 	return p
 }
@@ -57,6 +59,7 @@ func main() {
 	if len(_files) < 1 {
 		log.Fatal("Please provide enough files")
 	}
+	_fileno = 0
 
 	runtime.GOMAXPROCS(10)
 	glib.ThreadInit(nil)
