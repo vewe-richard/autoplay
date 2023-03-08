@@ -123,7 +123,7 @@ func keyevent() {
 		time.Sleep(10 * time.Millisecond)
 		kb.Release()
 
-		delay := (time.Duration)(10 + rand.Intn(10)*5)
+		delay := (time.Duration)(10 + rand.Intn(50)*5)
 		time.Sleep(100 * time.Millisecond * delay) //delay
 		fmt.Println("sleep ", delay)
 
