@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"time"
@@ -86,7 +87,7 @@ func main() {
 	plates.ModifyText(gtk.STATE_NORMAL, gdk.NewColor("white"))
 	plates.ModifyBase(0, gdk.NewColorRGB(0x4f4f, 0x4d4d, 0x4646))
 	plates.ModifyFontEasy("11")
-	plates.GetBuffer().SetText(" 五   14:28  ")
+	plates.GetBuffer().SetText(timestr())
 
 	fixed.Put(plates, 958, (2))
 	window.Fullscreen()
@@ -96,9 +97,15 @@ func main() {
 
 			gdk.ThreadsEnter()
 			image.SetFromFile(getFile())
-			plates.GetBuffer().SetText("Fri 14:16")
+			plates.GetBuffer().SetText(timestr())
 			gdk.ThreadsLeave()
+			if _fileno >= len(_files) {
+				break
+			}
 		}
+		fmt.Println("Exit from show picture")
+		cmd := exec.Command("gnome-screensaver-command", "-l")
+		cmd.Run()
 	}()
 
 	//event := make(chan interface{})
@@ -111,16 +118,20 @@ func main() {
 			window.Unfullscreen()
 		} else if event.Keyval == gdk.KEY_f {
 			window.Fullscreen()
+		} else {
+			fmt.Println("key")
 		}
 	})
-
 	window.ShowAll()
 	go keyevent()
-	go func() {
-		gdk.ThreadsEnter()
-		gdk.ThreadsLeave()
-	}()
+
 	gtk.Main()
+}
+
+func timestr() string {
+	day := []string{"", "一", "二", "三", "四", "五", "六", "日"}
+	now := time.Now()
+	return fmt.Sprintf(" %s    %02d:%02d  ", day[now.Weekday()], now.Hour(), now.Minute())
 }
 
 func keyevent() {
@@ -139,6 +150,10 @@ func keyevent() {
 	cnt := 0
 	robotgo.Move(105, 105)
 	for {
+		if _fileno >= len(_files) {
+			break
+		}
+
 		// Select keys to be pressed
 		r := rand.Intn(len(keys))
 		kb.SetKeys(keys[r])
@@ -181,4 +196,7 @@ func keyevent() {
 		cnt += 1
 
 	}
+	fmt.Println("Exit from keyevent")
+	cmd := exec.Command("gnome-screensaver-command", "-l")
+	cmd.Run()
 }
