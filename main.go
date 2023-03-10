@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 //install robotgo
@@ -77,16 +78,30 @@ func main() {
 	window.SetSizeRequest(1880, 1030)
 
 	image := gtk.NewImageFromFile(getFile())
-	fixed.Put(image, -56, -51)
+	//fixed.Put(image, -56, -51)
+	fixed.Put(image, 0, 0)
+	window.Fullscreen()
 	go func() {
 		for {
 			time.Sleep(time.Second * 60 * 8)
 
 			gdk.ThreadsEnter()
 			image.SetFromFile(getFile())
+			//window.Unfullscreen()
 			gdk.ThreadsLeave()
 		}
 	}()
+
+	//event := make(chan interface{})
+
+	window.Connect("key-press-event", func(ctx *glib.CallbackContext) {
+		arg := ctx.Args(0)
+		event := *(**gdk.EventKey)(unsafe.Pointer(&arg))
+		fmt.Println(event.Keyval)
+		if event.Keyval == gdk.KEY_Escape {
+			window.Unfullscreen()
+		}
+	})
 
 	window.ShowAll()
 	go keyevent()
@@ -107,6 +122,7 @@ func keyevent() {
 	keys := []int{keybd_event.VK_UP, keybd_event.VK_DOWN, keybd_event.VK_LEFT, keybd_event.VK_RIGHT}
 	skipmouse := false
 	cnt := 0
+	robotgo.Move(105, 105)
 	for {
 		// Select keys to be pressed
 		r := rand.Intn(len(keys))
@@ -123,7 +139,7 @@ func keyevent() {
 		time.Sleep(10 * time.Millisecond)
 		kb.Release()
 
-		delay := (time.Duration)(10 + rand.Intn(50)*5)
+		delay := (time.Duration)(10 + rand.Intn(100)*5)
 		time.Sleep(100 * time.Millisecond * delay) //delay
 		fmt.Println("sleep ", delay)
 
