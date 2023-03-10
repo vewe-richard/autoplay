@@ -1,5 +1,19 @@
 package main
 
+/*
+TODO:
+	for {
+		out, _ := exec.Command("xdotool", "getactivewindow", "getwindowname").Output()
+		fmt.Printf("%s\n", out)
+		time.Sleep(time.Second)
+	}
+	return
+	//Need add shortcut key to call a program to get active window name and put a list in Pictures
+TODO:
+	Check command exist "gnome-screensaver-command"
+	Check Files > 3
+*/
+
 import (
 	"fmt"
 	"github.com/go-vgo/robotgo"
