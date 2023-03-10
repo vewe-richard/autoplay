@@ -80,6 +80,15 @@ func main() {
 	image := gtk.NewImageFromFile(getFile())
 	//fixed.Put(image, -56, -51)
 	fixed.Put(image, 0, 0)
+
+	plates := gtk.NewTextView()
+	plates.SetEditable(false)
+	plates.ModifyText(gtk.STATE_NORMAL, gdk.NewColor("white"))
+	plates.ModifyBase(0, gdk.NewColorRGB(0x4f4f, 0x4d4d, 0x4646))
+	plates.ModifyFontEasy("11")
+	plates.GetBuffer().SetText(" 五   14:28  ")
+
+	fixed.Put(plates, 958, (2))
 	window.Fullscreen()
 	go func() {
 		for {
@@ -87,7 +96,7 @@ func main() {
 
 			gdk.ThreadsEnter()
 			image.SetFromFile(getFile())
-			//window.Unfullscreen()
+			plates.GetBuffer().SetText("Fri 14:16")
 			gdk.ThreadsLeave()
 		}
 	}()
@@ -100,11 +109,17 @@ func main() {
 		fmt.Println(event.Keyval)
 		if event.Keyval == gdk.KEY_Escape {
 			window.Unfullscreen()
+		} else if event.Keyval == gdk.KEY_f {
+			window.Fullscreen()
 		}
 	})
 
 	window.ShowAll()
 	go keyevent()
+	go func() {
+		gdk.ThreadsEnter()
+		gdk.ThreadsLeave()
+	}()
 	gtk.Main()
 }
 
@@ -151,8 +166,8 @@ func keyevent() {
 		}
 
 		if !skipmouse {
-			robotgo.Move(x+5, y+5)
-			if cnt%3 == 0 {
+			if cnt%(1+rand.Intn(10)) == 0 {
+				robotgo.Move(x+5, y+5)
 				fmt.Println("click mouse")
 				robotgo.Click()
 			}
