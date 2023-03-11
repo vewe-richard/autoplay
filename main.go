@@ -187,7 +187,7 @@ func keyevent() {
 		time.Sleep(10 * time.Millisecond)
 		kb.Release()
 
-		delay := (time.Duration)(10 + rand.Intn(100)*5)
+		delay := (time.Duration)(10 + rand.Intn(200))
 		time.Sleep(100 * time.Millisecond * delay) //delay
 		fmt.Println("sleep ", delay)
 
@@ -199,7 +199,7 @@ func keyevent() {
 		}
 
 		if !skipmouse {
-			if cnt%(1+rand.Intn(10)) == 0 {
+			if cnt%(1+rand.Intn(20)) == 0 {
 				robotgo.Move(x+5, y+5)
 				fmt.Println("click mouse")
 				robotgo.Click()
