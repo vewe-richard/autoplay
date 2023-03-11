@@ -2,64 +2,63 @@ package main
 
 /*
 TODO:
-	for {
-		out, _ := exec.Command("xdotool", "getactivewindow", "getwindowname").Output()
-		fmt.Printf("%s\n", out)
-		time.Sleep(time.Second)
-	}
-	return
-	//Need add shortcut key to call a program to get active window name and put a list in Pictures
-TODO:
 	Check command exist "gnome-screensaver-command"
 	Check Files > 3
+TODO:
+	disable key noise
+	random key and random mouse
 */
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/go-vgo/robotgo"
 	"github.com/mattn/go-gtk/gdk"
 	"github.com/mattn/go-gtk/glib"
 	"github.com/mattn/go-gtk/gtk"
 	"github.com/micmonay/keybd_event"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"os/exec"
 	"runtime"
-	"strings"
 	"time"
 	"unsafe"
 )
 
 //install robotgo
 //https://github.com/go-vgo/robotgo
-var _files []string
+var _files [][2]string
 var _fileno int
 
-func images() []string {
-	var results []string
-
+func images() error {
 	home, _ := os.UserHomeDir()
-	dirs := []string{home + "/Pictures"}
 
-	for _, d := range dirs {
-		files, err := ioutil.ReadDir(d)
-
-		if err == nil {
-			for _, f := range files {
-				if strings.Contains(f.Name(), "Screenshot") && strings.Contains(f.Name(), "png") {
-					results = append(results, d+"/"+f.Name())
-				}
-			}
-		}
+	file, err := os.Open(home + "/Pictures/text.log")
+	if err != nil {
+		return err
 	}
-	return results
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line[:10], line[11:])
+		_files = append(_files, [2]string{home + "/Pictures/" + line[:10] + ".png", line[11:]})
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
-func getFile() string {
+func getFile() (string, string) {
 	if len(_files) < 1 {
-		return ""
+		return "", ""
 	}
 	if _fileno >= len(_files) {
 		_fileno = 0
@@ -67,11 +66,12 @@ func getFile() string {
 	p := _files[_fileno]
 	_fileno += 1
 	fmt.Println(p)
-	return p
+
+	return p[0], p[1]
 }
 
 func main() {
-	_files = images()
+	images()
 	if len(_files) < 1 {
 		log.Fatal("Please provide enough files")
 	}
@@ -92,7 +92,9 @@ func main() {
 	window.Container.Add(fixed)
 	window.SetSizeRequest(1880, 1030)
 
-	image := gtk.NewImageFromFile(getFile())
+	pf, pt := getFile()
+	image := gtk.NewImageFromFile(pf)
+	window.SetTitle(pt)
 	//fixed.Put(image, -56, -51)
 	fixed.Put(image, 0, 0)
 
@@ -110,7 +112,9 @@ func main() {
 			time.Sleep(time.Second * 60 * 8)
 
 			gdk.ThreadsEnter()
-			image.SetFromFile(getFile())
+			pf, pt := getFile()
+			window.SetTitle(pt)
+			image.SetFromFile(pf)
 			plates.GetBuffer().SetText(timestr())
 			gdk.ThreadsLeave()
 			if _fileno >= len(_files) {
