@@ -188,7 +188,7 @@ func keyevent() {
 		kb.Release()
 
 		delay := (time.Duration)(10 + rand.Intn(200))
-		time.Sleep(100 * time.Millisecond * delay) //delay
+		time.Sleep(40 * time.Millisecond * delay) //delay
 		fmt.Println("sleep ", delay)
 
 		x, y := robotgo.GetMousePos()
