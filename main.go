@@ -109,7 +109,7 @@ func main() {
 	window.Fullscreen()
 	go func() {
 		for {
-			time.Sleep(time.Second * 60 * 8)
+			time.Sleep(time.Second * 60 * 6)
 
 			gdk.ThreadsEnter()
 			pf, pt := getFile()
